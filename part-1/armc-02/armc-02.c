@@ -27,6 +27,7 @@
 
 */
 
+#define RPI2
 /* The base address of the GPIO peripheral (ARM Physical Address) */
 #ifdef RPI2
     #define GPIO_BASE       0x3F200000UL
@@ -96,7 +97,7 @@ volatile unsigned int* gpio;
 volatile unsigned int tim;
 
 /** Main function - we'll never return from here */
-int main(void)
+int notmain(void)
 {
     /* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
     gpio = (unsigned int*)GPIO_BASE;
@@ -106,20 +107,44 @@ int main(void)
     gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
 
     /* Never exit as there is no OS to exit to! */
-    while(1)
-    {
+    #if 0
         for(tim = 0; tim < 500000; tim++)
             ;
 
         /* Set the LED GPIO pin low ( Turn OK LED on for original Pi, and off
            for plus models )*/
-        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT);
+        #endif
 
-        for(tim = 0; tim < 500000; tim++)
-            ;
+        //for(tim = 0; tim < 500000; tim++)
+         //   ;
 
         /* Set the LED GPIO pin high ( Turn OK LED off for original Pi, and on
            for plus models )*/
-        gpio[LED_GPSET] = (1 << LED_GPIO_BIT);
+        //gpio[LED_GPSET] = (1 << LED_GPIO_BIT); // led on
+    while(1)
+    {
+        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT); // led off
+        for(tim = 0; tim < 90000; tim++) ;
+
+        gpio[LED_GPSET] = (1 << LED_GPIO_BIT); // led on
+        for(tim = 0; tim < 90000; tim++) ;
+    #if 0
+      PUT32(gpio[LED_GPSET], 1 << LED_GPIO_BIT);
+      for(tim = 0; tim < 90000; tim++) ;
+
+      PUT32(gpio[LED_GPCLR], 1 << LED_GPIO_BIT);
+      for(tim = 0; tim < 90000; tim++) ;
+      #endif
+#if 0
+
+        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT); // led off
+        for(tim = 0; tim < 90000; tim++) ;
+
+        gpio[LED_GPSET] = (1 << LED_GPIO_BIT); // led on
+        for(tim = 0; tim < 90000; tim++) ;
+
+        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT); // led off
+        for(tim = 0; tim < 90000; tim++) ;
+#endif
     }
 }
