@@ -27,13 +27,7 @@
 
 */
 
-#define RPI2
-/* The base address of the GPIO peripheral (ARM Physical Address) */
-#ifdef RPI2
     #define GPIO_BASE       0x3F200000UL
-#else
-    #define GPIO_BASE       0x20200000UL
-#endif
 
 #if defined( RPIBPLUS ) || defined( RPI2 )
     #define LED_GPFSEL      GPIO_GPFSEL4
@@ -90,44 +84,49 @@
 #define GPIO_GPPUDCLK0  38
 #define GPIO_GPPUDCLK1  39
 
-/** GPIO Register set */
-volatile unsigned int* gpio;
 
-/** Simple loop variable */
-volatile unsigned int tim;
+#define DELAY_MAX 1000
 
 /** Main function - we'll never return from here */
 int notmain(void)
 {
+/** GPIO Register set */
+volatile unsigned int* gpio;
+
+/** Simple loop variable */
+volatile unsigned int i,j;
+
     /* Assign the address of the GPIO peripheral (Using ARM Physical Address) */
     gpio = (unsigned int*)GPIO_BASE;
 
     /* Write 1 to the GPIO16 init nibble in the Function Select 1 GPIO
        peripheral register to enable GPIO16 as an output */
-    gpio[LED_GPFSEL] |= (1 << LED_GPFBIT);
+    gpio[4] &= (~(7 << 21));
+    gpio[4] |= (1 << 21);
 
-    /* Never exit as there is no OS to exit to! */
-    #if 0
-        for(tim = 0; tim < 500000; tim++)
-            ;
-
-        /* Set the LED GPIO pin low ( Turn OK LED on for original Pi, and off
-           for plus models )*/
-        #endif
-
-        //for(tim = 0; tim < 500000; tim++)
-         //   ;
-
-        /* Set the LED GPIO pin high ( Turn OK LED off for original Pi, and on
-           for plus models )*/
-        //gpio[LED_GPSET] = (1 << LED_GPIO_BIT); // led on
     while(1)
     {
-        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT); // led off
-        for(tim = 0; tim < 90000; tim++) ;
+      // gpclr1
+        gpio[11] = (1 << 15); // led off
+        for(i = 0; i < DELAY_MAX; i++)
+          for(j = 0; j < 1000; j++) ;
 
-        gpio[LED_GPSET] = (1 << LED_GPIO_BIT); // led on
-        for(tim = 0; tim < 90000; tim++) ;
+      // gpset1
+        gpio[8] = (1 << 15); // led on
+        for(i = 0; i < DELAY_MAX; i++)
+          for(j = 0; j < 1000; j++) ;
+
+      // gpclr1
+        gpio[11] = (1 << 15); // led off
+        for(i = 0; i < DELAY_MAX; i++)
+          for(j = 0; j < 1000; j++) ;
+
+      // gpset1
+        gpio[8] = (1 << 15); // led on
+        while(1);
+
+
+
     #if 0
       PUT32(gpio[LED_GPSET], 1 << LED_GPIO_BIT);
       for(tim = 0; tim < 90000; tim++) ;
@@ -135,16 +134,6 @@ int notmain(void)
       PUT32(gpio[LED_GPCLR], 1 << LED_GPIO_BIT);
       for(tim = 0; tim < 90000; tim++) ;
       #endif
-#if 0
-
-        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT); // led off
-        for(tim = 0; tim < 90000; tim++) ;
-
-        gpio[LED_GPSET] = (1 << LED_GPIO_BIT); // led on
-        for(tim = 0; tim < 90000; tim++) ;
-
-        gpio[LED_GPCLR] = (1 << LED_GPIO_BIT); // led off
-        for(tim = 0; tim < 90000; tim++) ;
-#endif
     }
+    return 0;
 }
